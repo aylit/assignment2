@@ -1,0 +1,168 @@
+# Der folgende Code löst die Rosalind Aufgabe BAB1
+# Source: http://rosalind.info/problems/ba1b/
+
+# -------------------------------------
+# bearbeitet von Aylin Terhalle, 5095896
+
+# Vor schreiben der Funktion benötigen wir zunächst den Sample input
+# "text" ist unser DNA string: ACGTTGCATGTCGCATGATGCATGAGAGCT
+# "k" ist unser Integer und repräsentiert die Länge eines bestimmten Stückes der DNA (k-mer)
+# In diesem Szenario haben wir ein 4-mer
+
+text <- "ACGTTGCATGTCGCATGATGCATGAGAGCT"
+k <- 4
+
+# ERSTER LOOP:
+
+# Unsere Funktion speichern wir in einer Variable genannt "frequent_words"
+# Den Code der Funktion haben wir aus der Vorlesung: 
+# http://medicalbioinformatics.de/downloads/lectures/Bioinf101/SS19/bioinf101_ss19_woche4.pdf
+# Die Funktion wird nach allen am häufigsten vorkommende 4-meren in unserem "text" suchen
+# Sie tut das, indem sie ein Leseraster mit der Länge k generiert und den text nach Wiederholungen
+# dieses Leserasters absucht. Anschließend wir das Leseraster weitergeschoben.
+# Die Häufigkeiten der so betrachteten 4-mere wird in einer Liste gespeichert und diese dann nach
+# allen am häufigsten vorkommenden 4-meren abgesucht.
+
+frequent_words <- function(text, k) {
+
+# "frequent_patterns" ist jene Liste, welche sich im Laufe des Loops mit allen möglichen 4-meren
+# füllt (zB ACGT, CGTT, ...) und wird mit einer leeren Liste {} initialisiert.
+    
+  frequent_patterns <- {}
+  
+# "count" ist jene Liste, in welcher die Häufigkeiten mit welcher die in "frequent_patterns" 
+# gespeicherten 4-mere in unserem string "text" vorkommen. Auch diese wird mit einer leeren Liste {}
+# initialisiert
+  
+  count <- {}
+  
+# Die Funktion ist ein Loop, welcher den string "text" solange durchgeht, bis das letzte Leseraster
+# bestehend aus den letzten 4 Zeichen in unserem String(nchar(text)-k) erreicht ist. 
+  
+  for (i in 0:(nchar(text)-k)) {
+    
+# Die Variable "pattern" ist unser Leseraster und ihr wird mithilfe der Funktion substr ein Wert
+# zugewiesen. i beginnt bei 0, somit reicht unser Leseraster von Stelle 1 (i + 1 -> 0 + 1) im String 
+# bis 4 (i + k mit k = 4 -> 0+4). Mit jedem durchlauf wird i um eins erhöht, bist i = nchar(text)-k
+# und somit das letzte Leseraster mit Länge k = 4 erreicht ist.
+# Referenz: https://www.rdocumentation.org/packages/base/versions/3.6.0/topics/substr
+    
+    pattern <- substr(text, i+1, i+k)
+    
+# Die Variable "count" bezieht sich nun auf unseren zweiten Loop und füllt sich mit den entsprechenden
+# Häufigkeiten der oben genannten "pattern".
+      
+    count[i+1] <- pattern_count(text, pattern)
+  }
+
+# Um alle am häufigsten vorkommenden 4-mere herauszufinden, wird nun max() benutzt, welches einem
+# das Maximum aller vorhandenen Variablen zurück gibt.
+# Referenz: https://stat.ethz.ch/R-manual/R-devel/library/base/html/Extremes.html
+    
+  max_count <- max(count)
+  
+# Hierfür wird wieder ein Loop verwendet, welcher erneut den String "text" durchgeht...
+  
+  for (i in 0:(nchar(text)-k)) {
+
+# ...und überprüft, ob der dazugehörige "count" Wert dem Maximum entspricht.        
+    
+    if (count[i+1] == max_count)
+  
+# Ist das der Fall, wird der entsprechende 4-mer mithilfe von append() zu unserer Variable
+# "frequent_patterns" hinzugefügt und kann später angezeigt werden.
+# Referenz: https://www.rdocumentation.org/packages/base/versions/3.6.0/topics/append
+      
+      frequent_patterns <- append(frequent_patterns, substr(text, i+1, i+k))
+  }
+
+# return() kann uns nun all jene 4-mere zurückgeben, die am häufigsten vorkamen. Um keine
+# Duplikate zu erhalten, benutzen wir unique().
+# Referenz: https://www.datamentor.io/r-programming/return-function/
+# Referenz: https://stat.ethz.ch/R-manual/R-devel/library/base/html/unique.html
+    
+  return(unique(frequent_patterns))
+}
+
+# ZWEITER LOOP:
+
+# Nun der andere wesentliche Loop, in welchem die Häufigkeiten aller 4-mere dokumentiert werden.
+# Die Variable "pattern_count" findet sich auch im ersten Loop, somit sind diese verschachtelt.
+# Die Funktion läuft wieder unseren String "text" ab, nimmt sich das "pattern" innerhalb des 
+# Leserasters und überprüft dann, wie häufig es im String vorkommt. Diese Anzahl wird dann unter
+# "count" für das bestimmte "pattern" abgespeichert. Es wird also sozusagen eine Liste von
+# Häufigkeiten generiert.
+
+pattern_count <- function(text, pattern) {
+  
+# Der "count" für jedes "pattern" beginnt natürlich bei 0...
+  
+  count <- 0
+  
+# ...und die Länge des patterns "pattern_length" wird mithilfe von nchar() definiert. 
+# nchar() kann einen character vector nehmen und einen element vector mit der gleichen Größe
+# oder Länge zurückgeben. Die Länge des "pattern" ist noch immer 4, da wir noch immer nach
+# einem 4-mer suchen.
+# Referenz: https://www.rdocumentation.org/packages/base/versions/3.6.0/topics/nchar
+  
+  pattern_length <- nchar(pattern)
+  
+# Der Loop wandert jetzt wieder unseren String von Position 0 bis zu unserem letzten 4-mer ???
+  
+  for (i in 0:(nchar(text)-pattern_length)) {
+    
+# Wenn ein Abschnitt unseres Strings, oder auch: Substring mit substr(), unserem "pattern"
+# entspricht, dann...
+# (Der Substring substr() repliziert mit rep() unseren String von Position i+1 bis 
+# i+pattern_length und dieser "replizierte Bereich" wird dann mit "pattern" durch
+# "if ... ==" verglichen.)
+# Referenz: https://stat.ethz.ch/R-manual/R-devel/library/base/html/substr.html
+# Referenz: https://www.rdocumentation.org/packages/base/versions/3.6.0/topics/rep
+    
+    if (substr(rep(text), i+1, i+pattern_length) == pattern)
+      
+# ...wird zu dem bereits existierenden "count" 1 hinzuaddiert.      
+      
+      count <- count+1
+  }
+  
+# Und bei Beendigung des Loops wird dann der "count" mit return() zurückgegeben.
+  
+  return(count)
+  
+}
+
+# DATENAUSGABE:
+
+# Nun schauen wir, ob unser Ergebnis dem vorgegebenen Ergebnis entspricht.
+# Vorgegeben ist: CATG GCAT
+# Tatsächliches Ergebnis: [1] "GCAT" "CATG"
+# Das Ergebnis stimmt also überein. Der Loop hat funktioniert.
+
+frequent_words(text,k)
+
+# EXTRA DATA SET:
+
+
+# Source: http://bioinformaticsalgorithms.com/data/extradatasets/replication/frequent_words.txt
+# Input: the DNA string CGGAAGCGAGATTCGCGTGGCGTGATTCCGGCGGGCGTGGAGAAGCGAGATTCATTCAAGCCGGGAGGCGTGGCGTGGCGTGGCGTGCGGATTCAAGCCGGCGGGCGTGATTCGAGCGGCGGATTCGAGATTCCGGGCGTGCGGGCGTGAAGCGCGTGGAGGAGGCGTGGCGTGCGGGAGGAGAAGCGAGAAGCCGGATTCAAGCAAGCATTCCGGCGGGAGATTCGCGTGGAGGCGTGGAGGCGTGGAGGCGTGCGGCGGGAGATTCAAGCCGGATTCGCGTGGAGAAGCGAGAAGCGCGTGCGGAAGCGAGGAGGAGAAGCATTCGCGTGATTCCGGGAGATTCAAGCATTCGCGTGCGGCGGGAGATTCAAGCGAGGAGGCGTGAAGCAAGCAAGCAAGCGCGTGGCGTGCGGCGGGAGAAGCAAGCGCGTGATTCGAGCGGGCGTGCGGAAGCGAGCGG and a k of 12
+# Vorgegebener Output: 
+# CGGCGGGAGATT CGGGAGATTCAA CGTGCGGCGGGA CGTGGAGGCGTG CGTGGCGTGCGG GCGTGCGGCGGG 
+# GCGTGGAGGCGT GCGTGGCGTGCG GGAGAAGCGAGA GGAGATTCAAGC GGCGGGAGATTC GGGAGATTCAAG 
+# GTGCGGCGGGAG TGCGGCGGGAGA
+
+# "text" wird neu definiert und beinhaltet jetzt den String aus dem extra Datensatz.
+
+text <- "CGGAAGCGAGATTCGCGTGGCGTGATTCCGGCGGGCGTGGAGAAGCGAGATTCATTCAAGCCGGGAGGCGTGGCGTGGCGTGGCGTGCGGATTCAAGCCGGCGGGCGTGATTCGAGCGGCGGATTCGAGATTCCGGGCGTGCGGGCGTGAAGCGCGTGGAGGAGGCGTGGCGTGCGGGAGGAGAAGCGAGAAGCCGGATTCAAGCAAGCATTCCGGCGGGAGATTCGCGTGGAGGCGTGGAGGCGTGGAGGCGTGCGGCGGGAGATTCAAGCCGGATTCGCGTGGAGAAGCGAGAAGCGCGTGCGGAAGCGAGGAGGAGAAGCATTCGCGTGATTCCGGGAGATTCAAGCATTCGCGTGCGGCGGGAGATTCAAGCGAGGAGGCGTGAAGCAAGCAAGCAAGCGCGTGGCGTGCGGCGGGAGAAGCAAGCGCGTGATTCGAGCGGGCGTGCGGAAGCGAGCGG"
+
+# Auch "k" wird neu definiert: Wir suchen nun nach einem 12-mer und keinem 4-mer.
+
+k <- 12
+
+# Und schließlich die Ausgabe des Resultats von unserem verschachtelten Loop.
+# Tatsächlicher Output: 
+# [1] "GGAGAAGCGAGA" "GCGTGGCGTGCG" "CGTGGCGTGCGG" "CGGCGGGAGATT" "GGCGGGAGATTC" "GCGTGGAGGCGT"
+# [7] "CGTGGAGGCGTG" "GCGTGCGGCGGG" "CGTGCGGCGGGA" "GTGCGGCGGGAG" "TGCGGCGGGAGA" "CGGGAGATTCAA"
+# [13] "GGGAGATTCAAG" "GGAGATTCAAGC"
+
+frequent_words(text,k)
